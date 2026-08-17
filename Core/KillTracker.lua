@@ -16,7 +16,6 @@ local pairs, tostring, tonumber, select, strsplit, bit, pcall, type = pairs,
                                                                       type
 
 -- WoW APIs
-local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
 local GetLootSourceInfo = GetLootSourceInfo
 local GetNumLootItems = GetNumLootItems
 local UnitName = UnitName
@@ -135,12 +134,18 @@ end
 
 --[[========================================================================
     CLASSIC: COMBAT_LOG_EVENT_UNFILTERED → PARTY_KILL
+
+    Reads the combat log payload straight from the event's own varargs
+    rather than calling CombatLogGetCurrentEventInfo() - that convenience
+    wrapper doesn't exist on some older client builds, but the raw event
+    payload format itself has been stable since Cataclysm, so this works
+    identically (and needs no version branching) on every supported client.
 ========================================================================--]]
-function KillTracker.OnCombatLogEvent()
+function KillTracker.OnCombatLogEvent(event, ...)
     if not LA.Session.IsRunning() then return end
 
     local _, subEvent, _, _, _, _, _, destGUID,
-          destName, destFlags = CombatLogGetCurrentEventInfo()
+          destName, destFlags = ...
 
     if subEvent ~= "PARTY_KILL" then return end
     if not destGUID or not destName then return end

@@ -637,7 +637,9 @@ local function Constructor()
 	local num = AceGUI:GetNextWidgetNum(Type)
 	local frame = CreateFrame("Frame", nil, UIParent)
 
-	local treeframe = CreateFrame("Frame", nil, frame, "BackdropTemplate")
+	local treeframe = CreateFrame("Frame", nil, frame,
+	                               BackdropTemplateMixin and
+	                                   "BackdropTemplate" or nil)
 	treeframe:SetPoint("TOPLEFT")
 	treeframe:SetPoint("BOTTOMLEFT")
 	treeframe:SetWidth(DEFAULT_TREE_WIDTH)
@@ -656,7 +658,9 @@ local function Constructor()
 	treeframe:SetScript("OnSizeChanged", Tree_OnSizeChanged)
 	treeframe:SetScript("OnMouseWheel", Tree_OnMouseWheel)
 
-	local dragger = CreateFrame("Frame", nil, treeframe, "BackdropTemplate")
+	local dragger = CreateFrame("Frame", nil, treeframe,
+	                             BackdropTemplateMixin and "BackdropTemplate" or
+	                                 nil)
 	dragger:SetWidth(8)
 	dragger:SetPoint("TOP", treeframe, "TOPRIGHT")
 	dragger:SetPoint("BOTTOM", treeframe, "BOTTOMRIGHT")
@@ -681,8 +685,9 @@ local function Constructor()
 	scrollbg:SetAllPoints(scrollbar)
 	scrollbg:SetColorTexture(0,0,0,0.4)
 
-	local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-	border:SetPoint("TOPLEFT", treeframe, "TOPRIGHT")
+	local border = CreateFrame("Frame", nil, frame,
+	                            BackdropTemplateMixin and "BackdropTemplate" or
+	                                nil)
 	border:SetPoint("BOTTOMRIGHT")
 	border:SetBackdrop(PaneBackdrop)
 	border:SetBackdropColor(0.1, 0.1, 0.1, 0.5)

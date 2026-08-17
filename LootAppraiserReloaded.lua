@@ -1,5 +1,11 @@
 local LA = select(2, ...)
 
+-- version-compat shims (see Core/Compat.lua) - local shadows only, never
+-- touch the real global namespace
+local Settings = Settings or LA.Compat.Settings
+local SettingsPanel = SettingsPanel or LA.Compat.SettingsPanel
+local C_ChatInfo = C_ChatInfo or LA.Compat.C_ChatInfo
+
 local AceGUI = LibStub("AceGUI-3.0")
 
 -- Global loot manager object (used by LootManager.lua)
@@ -68,10 +74,10 @@ function LA:OnEnable()
     end
 
     -- Kill tracking: version-aware strategy
-    -- Classic: CLEU (PARTY_KILL) works fine
+    -- Classic & Legion (7.3.5): CLEU (PARTY_KILL) works fine
     -- Retail 12.0+: CLEU is blocked. Primary tracking via TryTrackFromLoot()
     --   called from Events.OnChatMsgLoot. Backup events below.
-    if LA.Util.IsClassic then
+    if LA.Util.IsClassic or LA.Util.IsLegion then
         LA:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED",
                          LA.KillTracker.OnCombatLogEvent)
     else

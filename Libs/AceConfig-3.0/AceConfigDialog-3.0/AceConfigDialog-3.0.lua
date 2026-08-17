@@ -12,6 +12,78 @@ local AceConfigDialog, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not AceConfigDialog then return end
 
+-- Backport: the unified Settings API (Settings.RegisterCanvasLayoutCategory,
+-- Settings.OpenToCategory, etc.) was added in patch 10.0, replacing
+-- InterfaceOptions_AddCategory / InterfaceOptionsFrame_OpenToCategory.
+-- AddToBlizOptions() below (unchanged from upstream) calls straight into
+-- the modern API. On older clients we translate just the handful of calls
+-- it actually makes back onto the classic InterfaceOptionsFrame.
+--
+-- This is a LOCAL shadow only - it intentionally does NOT touch the real
+-- global `Settings` table. Writing a real global here would make every
+-- OTHER addon's own "if Settings then ... else ... end" version checks
+-- think the client has the full modern Settings API (when it only has the
+-- few methods used below), which can make those addons take a "modern"
+-- code path that then errors out on a genuinely-missing function.
+local Settings = Settings or (function()
+	local S = {}
+	local categoriesByID = {}
+
+	local function RegisterLegacyPanel(canvasFrame, name, parentName)
+		if not canvasFrame then return end
+		canvasFrame.name = name
+		if parentName then canvasFrame.parent = parentName end
+		if InterfaceOptions_AddCategory then
+			InterfaceOptions_AddCategory(canvasFrame)
+		end
+	end
+
+	function S.RegisterCanvasLayoutCategory(canvasFrame, name)
+		local category = {ID = name, name = name, canvasFrame = canvasFrame}
+		categoriesByID[name] = category
+		return category
+	end
+
+	function S.RegisterCanvasLayoutSubcategory(parentCategory, canvasFrame, name)
+		local subcategory = {ID = name, name = name, canvasFrame = canvasFrame, parent = parentCategory}
+		categoriesByID[name] = subcategory
+		-- Some addons register a subcategory without ever separately
+		-- registering its parent as a category of its own (relying on
+		-- assumptions specific to the real modern Settings API, where the
+		-- parent may be implicit). If the parent has no real panel to nest
+		-- under, register this as a standalone top-level category instead
+		-- of leaving it completely inaccessible.
+		local parentName = parentCategory and parentCategory.canvasFrame and
+		                        parentCategory.name
+		RegisterLegacyPanel(canvasFrame, name, parentName)
+		return subcategory
+	end
+
+	function S.RegisterAddOnCategory(category)
+		if not category or not category.ID then return end
+		categoriesByID[category.ID] = category
+		if not category.parent then
+			RegisterLegacyPanel(category.canvasFrame, category.name)
+		end
+	end
+
+	function S.GetCategory(id)
+		local category = categoriesByID[id]
+		if not category then
+			-- Auto-vivify rather than erroring: some addons look up a
+			-- parent category that was never explicitly registered on its
+			-- own (see RegisterCanvasLayoutSubcategory above). A missing
+			-- parent shouldn't be a hard failure that can break the whole
+			-- Interface Options frame for every other addon.
+			category = {ID = id, name = id}
+			categoriesByID[id] = category
+		end
+		return category
+	end
+
+	return S
+end)()
+
 AceConfigDialog.OpenFrames = AceConfigDialog.OpenFrames or {}
 AceConfigDialog.Status = AceConfigDialog.Status or {}
 AceConfigDialog.frame = AceConfigDialog.frame or CreateFrame("Frame")
@@ -41,9 +113,15 @@ local function errorhandler(err)
 end
 
 local function safecall(func, ...)
-	if func then
-		return xpcall(func, errorhandler, ...)
-	end
+	if not func then return end
+	-- Some client builds' xpcall() only accepts (f, msgh) and silently drops
+	-- any arguments after msgh instead of forwarding them to f. Wrapping the
+	-- call in a closure sidesteps that: the extra arguments are captured as
+	-- upvalues instead of relying on xpcall's vararg forwarding.
+	local n = select("#", ...)
+	if n == 0 then return xpcall(func, errorhandler) end
+	local args = {...}
+	return xpcall(function() return func(unpack(args, 1, n)) end, errorhandler)
 end
 
 local width_multiplier = 170
@@ -570,10 +648,27 @@ do
 			end
 		end)
 
-		local border = CreateFrame("Frame", nil, frame, "DialogBorderOpaqueTemplate")
+		-- "DialogBorderOpaqueTemplate" doesn't exist on this client build
+		-- (it's a modern texture-atlas border added well after this
+		-- client's era). Apply an equivalent classic dialog backdrop
+		-- manually instead - these textures/backdrop API have existed
+		-- since Vanilla.
+		local border = CreateFrame("Frame", nil, frame,
+		                            BackdropTemplateMixin and
+		                                "BackdropTemplate" or nil)
 		border:SetAllPoints(frame)
-		frame:SetFixedFrameStrata(true)
-		frame:SetFixedFrameLevel(true)
+		if border.SetBackdrop then
+			border:SetBackdrop({
+				bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+				edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+				tile = true,
+				tileSize = 32,
+				edgeSize = 32,
+				insets = {left = 11, right = 12, top = 12, bottom = 11}
+			})
+		end
+		if frame.SetFixedFrameStrata then frame:SetFixedFrameStrata(true) end
+		if frame.SetFixedFrameLevel then frame:SetFixedFrameLevel(true) end
 
 		local text = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 		text:SetSize(290, 0)

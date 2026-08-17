@@ -1,8 +1,8 @@
-## Interface: 120100, 50504, 40402, 38002, 30405, 20506, 11509
+## Interface: 120100, 50504, 40402, 38002, 30405, 20506, 11509, 70300
 ## Title: LootAppraiser Reloaded
 ## Notes: An addon which keeps track of looted items and relative AH value.
 ## Author: Berickus
-## Version: @project-version@
+## Version: 3.4.3
 ## OptionalDeps: TradeSkillMaster, OribosExchange, Auctionator
 ## SavedVariables: LootAppraiserReloadedDB, LALootDB
 ## X-Embeds: Ace3, LibDataBroker-1.1, LibDBIcon-1.0, LibExtraTip, LibParse
@@ -10,6 +10,8 @@
 ## X-Curse-Project-ID: 1084464
 ## X-Wago-ID: Q6aEwg6W
 ## X-WoWI-ID: 26962
+
+Core\Compat.lua
 
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml

@@ -29,6 +29,14 @@ local format, gsub, wipe, next, select = string.format, string.gsub, table.wipe,
 local IsInRaid, IsInGroup, SendChatMessage = IsInRaid, IsInGroup, SendChatMessage
 
 -- Make sure FCT is loaded
+-- C_AddOns didn't exist prior to patch 10.0 (these were plain globals);
+-- shim locally rather than writing to the real global C_AddOns, so we
+-- don't affect any other addon's own "if C_AddOns then" version checks.
+local C_AddOns = C_AddOns or {
+	EnableAddOn = EnableAddOn,
+	IsAddOnLoaded = IsAddOnLoaded,
+	LoadAddOn = LoadAddOn
+}
 local EnableAddOn = C_AddOns.EnableAddOn
 local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 local LoadAddOn = C_AddOns.LoadAddOn
@@ -401,7 +409,12 @@ do
 		wipe(sink.channelMappingIds)
 		for i = 1, select("#", ...), 3 do
 			local id, name = select(i, ...)
-			sink.channelMappingIds[name] = id
+			-- On this client build, GetChannelList() can return an entry
+			-- with a nil name (e.g. before all default channels are
+			-- joined) - skip it instead of crashing the whole rescan.
+			if name then
+				sink.channelMappingIds[name] = id
+			end
 		end
 		for k, v in next, sink.channelMapping do
 			if v == "CHANNEL" and not sink.channelMappingIds[k] then

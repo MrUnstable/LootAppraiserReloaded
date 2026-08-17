@@ -62,9 +62,18 @@ local function safecall(func, ...)
 	-- we check to see if the func is passed is actually a function here and don't error when it isn't
 	-- this safecall is used for optional functions like OnInitialize OnEnable etc. When they are not
 	-- present execution should continue without hinderance
-	if type(func) == "function" then
-		return xpcall(func, errorhandler, ...)
-	end
+	if type(func) ~= "function" then return end
+
+	-- Some client builds' xpcall() only accepts (f, msgh) and silently drops
+	-- any arguments after msgh instead of forwarding them to f - which would
+	-- mean `self` (and everything else) never reaches func at all. Wrapping
+	-- the call in a closure sidesteps that: the extra arguments are captured
+	-- as upvalues instead of relying on xpcall's vararg forwarding, so this
+	-- works correctly whether or not that forwarding is supported.
+	local n = select("#", ...)
+	if n == 0 then return xpcall(func, errorhandler) end
+	local args = {...}
+	return xpcall(function() return func(unpack(args, 1, n)) end, errorhandler)
 end
 
 -- local functions that will be implemented further down

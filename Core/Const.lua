@@ -4,6 +4,7 @@ local LA = LibStub("AceAddon-3.0"):NewAddon(select(2, ...),
                                             "LibSink-2.0") -- "AceHook-3.0",
 
 -- wow api
+local C_AddOns = C_AddOns or LA.Compat.C_AddOns
 local GetAddOnMetadata, UIParent = C_AddOns.GetAddOnMetadata, UIParent
 
 local CONST = {}

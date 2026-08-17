@@ -11,11 +11,13 @@ local LSM = LibStub:GetLibrary("LibSharedMedia-3.0")
 local LibParse = LibStub:GetLibrary("LibParse")
 
 -- Wow APIs
+local C_Map = C_Map or LA.Compat.C_Map
+local C_ChatInfo = C_ChatInfo or LA.Compat.C_ChatInfo
 local GetItemInfo, IsInGroup, UnitGUID, GetBestMapForUnit,
-      PlaySoundFile, SendAddonMessage = GetItemInfo, IsInGroup,
+      PlaySoundFile, PlaySound, SendAddonMessage = GetItemInfo, IsInGroup,
                                         UnitGUID,
                                         C_Map.GetBestMapForUnit,
-                                        PlaySoundFile,
+                                        PlaySoundFile, PlaySound,
                                         C_ChatInfo.SendAddonMessage
 
 -- Lua APIs
@@ -129,7 +131,7 @@ function LootProcessing.HandleItemLooted(itemLink, itemID, quantity, source)
 
     private.IncLootedItemCounter(quantity, source)
     private.AddItemValue2LootedItemValue(itemValue, source)
-    if LA.Util.IsModern then private.IncWoWTokenPercentage(source) end
+    if LA.Util.HasWowToken then private.IncWoWTokenPercentage(source) end
 
     -- Track loot for session history
     LA.SessionHistory.AddLootItem(itemID, itemLink, quantity, itemValue)
@@ -276,7 +278,12 @@ function private.PlayGATSound(gatTier, source)
     local soundName = LA.db.profile.notification[soundKey] or "None"
     LA.Debug.Log("gatSound: " .. gatTier)
     if soundName ~= "-- No Sound" then
-        PlaySoundFile(LSM:Fetch("sound", soundName), "master")
+        local sound = LSM:Fetch("sound", soundName)
+        if type(sound) == "number" then
+            PlaySound(sound, "master")
+        elseif sound then
+            PlaySoundFile(sound, "master")
+        end
     end
 end
 

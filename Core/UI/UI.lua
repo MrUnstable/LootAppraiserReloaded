@@ -23,6 +23,11 @@ local AceGUI = LibStub("AceGUI-3.0")
 
 -- AceEvent:Embed(UI)
 
+-- version-compat shims (see Core/Compat.lua) - local shadows only, never
+-- touches the real global namespace
+local C_Map = C_Map or LA.Compat.C_Map
+local C_Container = C_Container or LA.Compat.C_Container
+
 -- wow api
 local GetItemQualityColor, CreateFrame, UIFrameFadeOut, UIFrameFadeIn,
       IsShiftKeyDown, PlaySound, GameTooltip, GetBestMapForUnit, GetMapInfo,
@@ -410,7 +415,7 @@ function UI.ShowMainWindow(showMainUI)
     private.MAIN_UI:EnableResize(true)
     private.MAIN_UI.frame:SetClampedToScreen(true)
 
-    if LA.Util.IsModern then
+    if LA.Util.HasWowToken then
         -- Request the initial market price update
         C_WowTokenPublic.UpdateMarketPrice()
         C_Timer.After(2, function()
@@ -446,7 +451,7 @@ function UI.ShowMainWindow(showMainUI)
             end
         end
 
-        if LA.Util.IsModern then
+        if LA.Util.HasWowToken then
             updateTimer = updateTimer + elapsed
             if updateTimer >= 900 then -- ⏳ Updating every 15 min
                 C_WowTokenPublic.UpdateMarketPrice()
@@ -806,7 +811,7 @@ function UI.PrepareDataContainer(parent)
                                                               innerWidth)
     parent:SetUserData("data_noteworthyItemCounter", noteworthyItemCounterUI)
 
-    if LA.Util.IsModern then
+    if LA.Util.HasWowToken then
         -- ...WoW token percentage
         local wowTokenPercentageUI = private.DefineRowForFrame(dataContainer,
                                                                "showWoWTokenPercentage",
@@ -998,7 +1003,7 @@ function UI.RefreshUIs()
                                             "noteworthyItemCounter") or 0)
     end
 
-    if LA.Util.IsModern then
+    if LA.Util.HasWowToken then
         -- WoW token percentage
         local wowTokenPercentageUI = private.MAIN_UI:GetUserData(
                                          "data_wowTokenPercentage")
@@ -1469,11 +1474,21 @@ function private.OnBtnDestroyTrashClick()
             local link = C_Container.GetContainerItemLink(bag, slot)
 
             -- grey items
-            if link and link:find("cnIQ0") then -- Poor = ff9d9d9d
-                C_Container.PickupContainerItem(bag, slot)
-                DeleteCursorItem()
+            -- (Detect via actual item quality rather than parsing a color
+            -- code out of the link - modern clients colorize item links
+            -- with a named token like "|cnIQ0:...|r" for Poor quality,
+            -- while this client build still uses the raw hex color
+            -- "|cff9d9d9d...". Reading the real quality value works
+            -- identically on every client version.)
+            if link then
+                local itemID = LA.Util.ToItemID(link)
+                local _, _, quality = GetItemInfo(itemID or link)
+                if quality == 0 then -- Poor
+                    C_Container.PickupContainerItem(bag, slot)
+                    DeleteCursorItem()
 
-                destroyCounter = destroyCounter + 1
+                    destroyCounter = destroyCounter + 1
+                end
             end
 
             -- blacklist

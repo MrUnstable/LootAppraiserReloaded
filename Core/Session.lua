@@ -13,6 +13,7 @@ local private = {
 }
 
 -- wow api
+local C_Map = C_Map or LA.Compat.C_Map
 local GetBestMapForUnit, GetUnitName, GetRealmName, GetMapInfo =
     C_Map.GetBestMapForUnit, GetUnitName, GetRealmName, C_Map.GetMapInfo
 

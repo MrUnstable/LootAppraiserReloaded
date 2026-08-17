@@ -1,5 +1,9 @@
 local LA = select(2, ...)
 
+-- version-compat shim (see Core/Compat.lua) - local shadow only, never
+-- touches the real global namespace
+local C_Map = C_Map or LA.Compat.C_Map
+
 --[[
 --LootManager
 lootmanager = {}

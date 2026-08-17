@@ -5,4 +5,8 @@ function btnNWIClose_OnClick()
     NoteworthyUI:Hide()
 end
 
-function NoteworthyUI_OnLoad() end
+function NoteworthyUI_OnLoad()
+    if not NoteworthyUI.SetBackdrop and BackdropTemplateMixin then
+        Mixin(NoteworthyUI, BackdropTemplateMixin)
+    end
+end

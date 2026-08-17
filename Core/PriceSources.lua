@@ -8,6 +8,7 @@ local OEMarketInfo = OEMarketInfo
 local BlizzardVendorSell = 1
 
 -- Wow APIs
+local C_AddOns = C_AddOns or LA.Compat.C_AddOns
 local GetItemInfo, StaticPopupDialogs, StaticPopup_Show = GetItemInfo,
                                                           StaticPopupDialogs,
                                                           StaticPopup_Show

@@ -62,9 +62,15 @@ local function errorhandler(err)
 end
 
 local function safecall(func, ...)
-	if func then
-		return xpcall(func, errorhandler, ...)
-	end
+	if not func then return end
+	-- Some client builds' xpcall() only accepts (f, msgh) and silently drops
+	-- any arguments after msgh instead of forwarding them to f. Wrapping the
+	-- call in a closure sidesteps that: the extra arguments are captured as
+	-- upvalues instead of relying on xpcall's vararg forwarding.
+	local n = select("#", ...)
+	if n == 0 then return xpcall(func, errorhandler) end
+	local args = {...}
+	return xpcall(function() return func(unpack(args, 1, n)) end, errorhandler)
 end
 
 -- Recycling functions

@@ -2,9 +2,9 @@
 ## Title: Lib: Toast-1.0
 ## Notes: Provides one or many informational windows with optional interactive widgets.
 ## Author: Torhal
-## Version: @project-version@
+## Version: 3.4.3
 ## LoadOnDemand: 1
-## X-Date: @project-date-iso@
+## X-Date: 2026-08-14T07:51:55Z
 ## X-Category: Libraries
 ## X-License: All Rights Reserved
 

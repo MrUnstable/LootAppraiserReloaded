@@ -1,6 +1,6 @@
 <Ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.blizzard.com/wow/ui/">
 	<Script file="NoteworthyUI.lua" />
-	<Frame name="NoteworthyUI" inherits="BackdropTemplate" mixin="BackdropTemplateMixin" hidden="true" parent="UIParent" toplevel="true" movable="true">
+	<Frame name="NoteworthyUI" hidden="true" parent="UIParent" toplevel="true" movable="true">
 		<Size>
 			<AbsDimension x="287" y="286" />
 		</Size>

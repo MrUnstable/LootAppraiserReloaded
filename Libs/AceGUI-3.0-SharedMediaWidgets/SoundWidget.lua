@@ -11,6 +11,21 @@ do
 	local widgetVersion = 12
 
 	local contentFrameCache = {}
+
+	-- Sounds registered with LSM:Register("sound", key, data) may use either
+	-- a file path (custom sounds) or a numeric SoundKitID (native Blizzard
+	-- sounds, e.g. "Auction Window Open" = 567482). PlaySoundFile() only
+	-- understands file paths - a numeric ID needs PlaySound() instead, or
+	-- it silently does nothing. Dispatch based on the value's type so both
+	-- kinds of registration actually play.
+	local function PlayMediaSound(value, channel)
+		if type(value) == "number" then
+			PlaySound(value, channel)
+		elseif value then
+			PlaySoundFile(value, channel)
+		end
+	end
+
 	local function ReturnSelf(self)
 		self:ClearAllPoints()
 		self:Hide()
@@ -29,7 +44,7 @@ do
 	local function ContentSpeakerOnClick(this, button)
 		local self = this.frame.obj
 		local sound = this.frame.text:GetText()
-		PlaySoundFile(self.list[sound] ~= sound and self.list[sound] or Media:Fetch('sound',sound), "Master")
+		PlayMediaSound(self.list[sound] ~= sound and self.list[sound] or Media:Fetch('sound',sound), "Master")
 	end
 
 	local function GetContentLine()
@@ -201,7 +216,7 @@ do
 	local function WidgetPlaySound(this)
 		local self = this.obj
 		local sound = self.frame.text:GetText()
-		PlaySoundFile(self.list[sound] ~= sound and self.list[sound] or Media:Fetch('sound',sound), "Master")
+		PlayMediaSound(self.list[sound] ~= sound and self.list[sound] or Media:Fetch('sound',sound), "Master")
 	end
 
 	local function Constructor()

@@ -7,7 +7,15 @@ if not CallbackHandler then return end -- No upgrade needed
 local meta = {__index = function(tbl, key) tbl[key] = {} return tbl[key] end}
 
 -- Lua APIs
-local securecallfunction, error = securecallfunction, error
+-- securecallfunction() doesn't exist yet on this client build. It exists to
+-- avoid propagating taint into the callback; on this older client there is
+-- no equivalent restriction, so a direct call is the correct fallback (and
+-- exactly what every addon on this client build already expects, since none
+-- of them could have relied on this function existing). This is a LOCAL
+-- shadow only - it does not touch the real global namespace.
+local securecallfunction, error = securecallfunction or
+                                       function(func, ...) return func(...) end,
+                                   error
 local setmetatable, rawget = setmetatable, rawget
 local next, select, pairs, type, tostring = next, select, pairs, type, tostring
 

@@ -3,6 +3,10 @@ local LA = select(2, ...)
 local Util = {}
 LA.Util = Util
 
+-- version-compat shim (see Core/Compat.lua) - local shadow only, never
+-- touches the real global namespace
+local C_Item = C_Item or LA.Compat.C_Item
+
 local tocVersion = select(4, GetBuildInfo()) -- Returns TOC version (e.g., 110205)
 Util.TOCVersion = tocVersion
 
@@ -15,12 +19,20 @@ Util.IsMoPClassic = (tocVersion >= 50000 and tocVersion < 60000) -- MoP Classic 
 Util.IsClassic = Util.IsClassicEra or Util.IsMoPClassic or Util.IsCataClassic or
                      Util.IsWrathClassic or Util.IsTBCClassic
 
+-- Legacy Retail (predates the Classic progression line entirely)
+Util.IsLegion = (tocVersion >= 70000 and tocVersion < 80000) -- Legion (7.x), e.g. 7.3.5
+
 -- Retail Expansions
 Util.IsRetail = (tocVersion >= 100000) -- Dragonflight+ (10.x+)
 Util.IsTWW = (tocVersion >= 110200 and tocVersion < 120000) -- The War Within (11.x)
 Util.IsMidnight = (tocVersion >= 120000)
 
 Util.IsModern = Util.IsRetail or Util.IsTWW or Util.IsMidnight
+
+-- WoW Token has existed since patch 6.1.2 (WoD), so it predates both the
+-- Classic progression line's own token support and this addon's IsModern
+-- (Dragonflight+) cutoff. Legion (7.3.5) has it too.
+Util.HasWowToken = Util.IsModern or Util.IsLegion
 
 -- lua api
 local abs, floor, string, pairs, table, tonumber = abs, floor, string, pairs,

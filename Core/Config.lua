@@ -1444,14 +1444,28 @@ function Config:OnEnable()
     LA.Debug.Log("Config - Init")
 
     -- register sounds
+    -- Native/system sounds are looked up by SOUNDKIT name rather than a
+    -- hardcoded numeric SoundKitID where possible: SoundKit row IDs are
+    -- not stable across client versions (they're just row numbers in a
+    -- database that keeps growing), so a hardcoded ID sourced from a
+    -- modern client's much larger table can point at nothing at all - a
+    -- silent no-op - on an older client. SOUNDKIT.<NAME> resolves to the
+    -- correct ID for whichever client is actually running.
     LSM:Register("sound", "-- No Sound", 0) -- no sound
-    LSM:Register("sound", "Auction Window Open", 567482) -- AuctionWindowOpen
-    LSM:Register("sound", "Auction Window Close", 567499) -- AuctionWindowClose
-    LSM:Register("sound", "Auto Quest Complete", 567476) -- AutoQuestComplete
-    LSM:Register("sound", "Level Up", 567431) -- LevelUp
-    LSM:Register("sound", "Player Invite", 567451) -- iPlayerInviteA
-    LSM:Register("sound", "Raid Warning", 567397) -- RaidWarning
-    LSM:Register("sound", "Ready Check", 567409) -- ReadyCheck
+    LSM:Register("sound", "Auction Window Open",
+                  SOUNDKIT and SOUNDKIT.AUCTION_WINDOW_OPEN or 567482)
+    LSM:Register("sound", "Auction Window Close",
+                  SOUNDKIT and SOUNDKIT.AUCTION_WINDOW_CLOSE or 567499)
+    LSM:Register("sound", "Auto Quest Complete",
+                  SOUNDKIT and SOUNDKIT.UI_AUTO_QUEST_COMPLETE or 567476)
+    LSM:Register("sound", "Level Up", 567431) -- LevelUp (no stable named
+    -- SOUNDKIT entry found for this one on any client version checked)
+    LSM:Register("sound", "Player Invite",
+                  SOUNDKIT and SOUNDKIT.IG_PLAYER_INVITE or 567451)
+    LSM:Register("sound", "Raid Warning",
+                  SOUNDKIT and SOUNDKIT.RAID_WARNING or 567397)
+    LSM:Register("sound", "Ready Check",
+                  SOUNDKIT and SOUNDKIT.READY_CHECK or 567409)
 
     -- general LootAppraiserReloaded configuration
     AceConfigRegistry:RegisterOptionsTable(LA.CONST.METADATA.NAME,

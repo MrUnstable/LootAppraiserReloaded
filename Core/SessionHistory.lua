@@ -11,6 +11,7 @@ local pairs, ipairs, table, time, date, tostring, floor = pairs, ipairs, table,
                                                           floor
 
 -- WoW APIs
+local C_Map = C_Map or LA.Compat.C_Map
 local GetMapInfo, GetBestMapForUnit, GetUnitName, GetRealmName =
     C_Map.GetMapInfo, C_Map.GetBestMapForUnit, GetUnitName, GetRealmName
 

@@ -7,7 +7,8 @@ local private = {}
 
 -- Wow APIs
 local GetItemInfo, GetItemCount, C_Container, GetCoinTextureString =
-    GetItemInfo, GetItemCount, C_Container, GetCoinTextureString
+    GetItemInfo, GetItemCount, C_Container or LA.Compat.C_Container,
+    GetCoinTextureString
 
 --[[------------------------------------------------------------------------
     Event: Merchant window opened

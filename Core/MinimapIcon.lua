@@ -4,6 +4,8 @@ local MinimapIcon = {}
 LA.MinimapIcon = MinimapIcon
 
 -- Wow APIs
+local Settings = Settings or LA.Compat.Settings
+local SettingsPanel = SettingsPanel or LA.Compat.SettingsPanel
 local IsShiftKeyDown, SecondsToTime, time, pairs = IsShiftKeyDown,
                                                    SecondsToTime, time, pairs
 
