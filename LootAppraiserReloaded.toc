@@ -1,6 +1,6 @@
 ## Interface: 120100, 50504, 40402, 38002, 30405, 20506, 11509, 70300
 ## Title: LootAppraiser Reloaded
-## Notes: An addon which keeps track of looted items and relative AH value.
+## Notes: An addon which keeps track of looted items and relative AH value. |nBackport by Reckwell - Evermoon (TauriWoW). |nUpdates on https://github.com/MrUnstable/LootAppraiserReloaded
 ## Author: Berickus
 ## Version: 3.4.3
 ## OptionalDeps: TradeSkillMaster, OribosExchange, Auctionator
